@@ -1,0 +1,7 @@
+workflows:
+  android-release:
+    name: Android Release Build
+    scripts:
+      - flutter build apk --release
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,192 +11,186 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Organic Bloom',
+      title: 'Organic Bloom Billing',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const BillingScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
+class Product {
+  final String name;
+  final double price;
+  Product({required this.name, required this.price});
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
+class BillingScreen extends StatefulWidget {
+  const BillingScreen({super.key});
 
-  final List<Widget> _screens = [
-    const HomeTab(),
-    const ProductsTab(),
-    const TipsTab(),
-    const ContactTab(),
+  @override
+  State<BillingScreen> createState() => _BillingScreenState();
+}
+
+class _BillingScreenState extends State<BillingScreen> {
+  final TextEditingController customerNameController = TextEditingController();
+
+  // 👇 یہاں اپنے products کے نام اور ریٹ ڈال دیں
+  final List<Product> products = [
+    Product(name: 'Herbal Hair Oil 100ml', price: 850),
+    Product(name: 'Aloe Vera Gel 200g', price: 650),
+    Product(name: 'Neem Face Wash', price: 550),
+    Product(name: 'Henna Powder 100g', price: 450),
+    Product(name: 'Organic Soap', price: 350),
   ];
+
+  List<int> quantities = [];
+  double discount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    quantities = List.generate(products.length, (index) => 0);
+  }
+
+  double get total {
+    double sum = 0;
+    for (int i = 0; i < products.length; i++) {
+      sum += products[i].price * quantities[i];
+    }
+    return sum - discount;
+  }
+
+  void sendWhatsApp() async {
+    if (customerNameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('پہلے کسٹمر کا نام لکھیں')),
+      );
+      return;
+    }
+
+    String bill = 'Organic Bloom Bill\n';
+    bill += 'Customer: ${customerNameController.text}\n\n';
+    bill += 'Items:\n';
+
+    for (int i = 0; i < products.length; i++) {
+      if (quantities[i] > 0) {
+        bill += '${products[i].name} x ${quantities[i]} = Rs.${products[i].price * quantities[i]}\n';
+      }
+    }
+
+    bill += '\nDiscount: Rs.$discount';
+    bill += '\nTotal: Rs.${total.toStringAsFixed(0)}';
+
+    final Uri url = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(bill)}');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Organic Bloom Cosmetics'),
+        title: const Text('Organic Bloom Billing'),
         backgroundColor: Colors.green.shade700,
         foregroundColor: Colors.white,
       ),
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        selectedItemColor: Colors.green.shade700,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.spa), label: 'Products'),
-          BottomNavigationBarItem(icon: Icon(Icons.lightbulb), label: 'Tips'),
-          BottomNavigationBarItem(icon: Icon(Icons.phone), label: 'Contact'),
-        ],
-      ),
-    );
-  }
-}
-
-class ProductsTab extends StatelessWidget {
-  const ProductsTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        _productCard('Herbal Hair Oil', 'بالم کے لیے خالص تیل', 'Rs. 850'),
-        _productCard('Aloe Vera Gel', 'جلد کے لیے قدرتی جیل', 'Rs. 650'),
-        _productCard('Neem Face Wash', 'دانوں کے لیے صابن', 'Rs. 550'),
-        _productCard('Henna Powder', 'بالوں کے لیے مہندی', 'Rs. 450'),
-      ],
-    );
-  }
-
-  Widget _productCard(String name, String desc, String price) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: Icon(Icons.spa, size: 40, color: Colors.green.shade700),
-        title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(desc),
-        trailing: Text(price, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green.shade700)),
-      ),
-    );
-  }
-}
-
-class TipsTab extends StatelessWidget {
-  const TipsTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: const [
-        ListTile(
-          leading: Icon(Icons.check_circle, color: Colors.green),
-          title: Text('ہفتے میں 2 بار تیل لگائیں'),
-          subtitle: Text('گرم تیل سے مساج کریں، 2 گھنٹے بعد دھو لیں'),
-        ),
-        ListTile(
-          leading: Icon(Icons.check_circle, color: Colors.green),
-          title: Text('زیادہ پانی پئیں'),
-          subtitle: Text('دن میں 8-10 گلاس پانی جلد کے لیے بہترین'),
-        ),
-        ListTile(
-          leading: Icon(Icons.check_circle, color: Colors.green),
-          title: Text('کیمیکل شیمپو سے بچیں'),
-          subtitle: Text('قدرتی شیمپو یا بیسن استعمال کریں'),
-        ),
-        ListTile(
-          leading: Icon(Icons.check_circle, color: Colors.green),
-          title: Text('رات کو نیند پوری کریں'),
-          subtitle: Text('7-8 گھنٹے کی نیند بالوں کے لیے ضروری'),
-        ),
-      ],
-    );
-  }
-}
-
-class ContactTab extends StatelessWidget {
-  const ContactTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
         children: [
-          const Text('Contact Us', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 20),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: Icon(Icons.phone, color: Colors.green.shade700),
-                    title: const Text('Phone/WhatsApp'),
-                    subtitle: const Text('+92 300 1234567'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.email, color: Colors.green.shade700),
-                    title: const Text('Email'),
-                    subtitle: const Text('organicbloom@email.com'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.location_on, color: Colors.green.shade700),
-                    title: const Text('Address'),
-                    subtitle: const Text('Karachi, Pakistan'),
-                  ),
-                ],
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: customerNameController,
+              decoration: const InputDecoration(
+                labelText: 'Customer Name',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person),
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green.shade700,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 50),
+          Expanded(
+            child: ListView.builder(
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: ListTile(
+                    title: Text(products[index].name),
+                    subtitle: Text('Rs.${products[index].price}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove_circle),
+                          onPressed: () {
+                            setState(() {
+                              if (quantities[index] > 0) quantities[index]--;
+                            });
+                          },
+                        ),
+                        Text('${quantities[index]}', style: const TextStyle(fontSize: 18)),
+                        IconButton(
+                          icon: const Icon(Icons.add_circle, color: Colors.green),
+                          onPressed: () {
+                            setState(() => quantities[index]++);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-            child: const Text('Order on WhatsApp'),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class HomeTab extends StatelessWidget {
-  const HomeTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.spa, size: 80, color: Colors.green.shade700),
-          const SizedBox(height: 20),
-          const Text(
-            'Welcome to Organic Bloom',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'قدرتی خوبصورتی، قدرتی طریقے',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              border: Border(top: BorderSide(color: Colors.grey.shade300)),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Text('Discount: Rs.', style: TextStyle(fontSize: 16)),
+                    Expanded(
+                      child: TextField(
+                        keyboardType: TextInputType.number,
+                        onChanged: (val) => setState(() => discount = double.tryParse(val)?? 0),
+                        decoration: const InputDecoration(
+                          hintText: '0',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Total:', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                    Text('Rs.${total.toStringAsFixed(0)}',
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green.shade700)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: sendWhatsApp,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade700,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  child: const Text('Send Bill on WhatsApp', style: TextStyle(fontSize: 18)),
+                ),
+              ],
+            ),
           ),
         ],
       ),

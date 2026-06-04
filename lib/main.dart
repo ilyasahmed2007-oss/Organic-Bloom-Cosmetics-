@@ -116,7 +116,7 @@ class TipsTab extends StatelessWidget {
           subtitle: Text('قدرتی شیمپو یا بیسن استعمال کریں'),
         ),
         ListTile(
-          leading: Icon(Icons.check_circle, color: Icon(Icons.check_circle, color: Colors.green),
+          leading: Icon(Icons.check_circle, color: Colors.green),
           title: Text('رات کو نیند پوری کریں'),
           subtitle: Text('7-8 گھنٹے کی نیند بالوں کے لیے ضروری'),
         ),

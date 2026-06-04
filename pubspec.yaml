@@ -1,7 +1,8 @@
 name: organic_bloom_cosmetics
-description: A new Flutter project for Organic Bloom Cosmetics.
+description: Organic Bloom Cosmetics App
 
 publish_to: 'none'
+
 version: 1.0.0+1
 
 environment:
@@ -10,12 +11,18 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  
   cupertino_icons: ^1.0.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
   flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
+
+  # Assets - اگر images فولڈر ہے تو ان کمنٹ کر دیں
+  # assets:
+  #   - assets/images/

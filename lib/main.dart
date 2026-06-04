@@ -1,199 +1,188 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const VyaparCloneApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class VyaparCloneApp extends StatelessWidget {
+  const VyaparCloneApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Organic Bloom Billing',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        primaryColor: const Color(0xFF00C853),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF00C853)),
         useMaterial3: true,
       ),
-      home: const BillingScreen(),
-      debugShowCheckedModeBanner: false,
+      home: const HomeScreen(),
     );
   }
 }
 
-class Product {
-  final String name;
-  final double price;
-  Product({required this.name, required this.price});
-}
-
-class BillingScreen extends StatefulWidget {
-  const BillingScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<BillingScreen> createState() => _BillingScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _BillingScreenState extends State<BillingScreen> {
-  final TextEditingController customerNameController = TextEditingController();
-
-  // 👇 یہاں اپنے products کے نام اور ریٹ ڈال دیں
-  final List<Product> products = [
-    Product(name: 'Herbal Hair Oil 100ml', price: 850),
-    Product(name: 'Aloe Vera Gel 200g', price: 650),
-    Product(name: 'Neem Face Wash', price: 550),
-    Product(name: 'Henna Powder 100g', price: 450),
-    Product(name: 'Organic Soap', price: 350),
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
+  List<Map<String, String>> parties = [
+    {'name': 'Ali Traders', 'balance': 'Rs 0'},
+    {'name': 'Ahmed Sons', 'balance': 'Rs 0'},
+    {'name': 'Cash Customer', 'balance': 'Rs 0'},
   ];
 
-  List<int> quantities = [];
-  double discount = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    quantities = List.generate(products.length, (index) => 0);
-  }
-
-  double get total {
-    double sum = 0;
-    for (int i = 0; i < products.length; i++) {
-      sum += products[i].price * quantities[i];
-    }
-    return sum - discount;
-  }
-
-  void sendWhatsApp() async {
-    if (customerNameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('پہلے کسٹمر کا نام لکھیں')),
-      );
-      return;
-    }
-
-    String bill = 'Organic Bloom Bill\n';
-    bill += 'Customer: ${customerNameController.text}\n\n';
-    bill += 'Items:\n';
-
-    for (int i = 0; i < products.length; i++) {
-      if (quantities[i] > 0) {
-        bill += '${products[i].name} x ${quantities[i]} = Rs.${products[i].price * quantities[i]}\n';
-      }
-    }
-
-    bill += '\nDiscount: Rs.$discount';
-    bill += '\nTotal: Rs.${total.toStringAsFixed(0)}';
-
-    final Uri url = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(bill)}');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    }
-  }
+  final List<String> _titles = [
+    'All Parties',
+    'Items',
+    'Reports',
+    'Sale',
+    'Purchase',
+    'Cash & Bank'
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Organic Bloom Billing'),
-        backgroundColor: Colors.green.shade700,
+        title: Text(_titles[_selectedIndex]),
+        backgroundColor: const Color(0xFF00C853),
         foregroundColor: Colors.white,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: customerNameController,
-              decoration: const InputDecoration(
-                labelText: 'Customer Name',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.person),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            UserAccountsDrawerHeader(
+              decoration: const BoxDecoration(color: Color(0xFF00C853)),
+              accountName: const Text('Organic Bloom'),
+              accountEmail: const Text('owner@example.com'),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.store, color: Color(0xFF00C853), size: 40),
               ),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: ListTile(
-                    title: Text(products[index].name),
-                    subtitle: Text('Rs.${products[index].price}'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.remove_circle),
-                          onPressed: () {
-                            setState(() {
-                              if (quantities[index] > 0) quantities[index]--;
-                            });
-                          },
-                        ),
-                        Text('${quantities[index]}', style: const TextStyle(fontSize: 18)),
-                        IconButton(
-                          icon: const Icon(Icons.add_circle, color: Colors.green),
-                          onPressed: () {
-                            setState(() => quantities[index]++);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              border: Border(top: BorderSide(color: Colors.grey.shade300)),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    const Text('Discount: Rs.', style: TextStyle(fontSize: 16)),
-                    Expanded(
-                      child: TextField(
-                        keyboardType: TextInputType.number,
-                        onChanged: (val) => setState(() => discount = double.tryParse(val)?? 0),
-                        decoration: const InputDecoration(
-                          hintText: '0',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Total:', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                    Text('Rs.${total.toStringAsFixed(0)}',
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green.shade700)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: sendWhatsApp,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green.shade700,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  child: const Text('Send Bill on WhatsApp', style: TextStyle(fontSize: 18)),
-                ),
-              ],
-            ),
-          ),
-        ],
+            _drawerItem(Icons.people, 'Parties', 0),
+            _drawerItem(Icons.inventory_2, 'Items', 1),
+            _drawerItem(Icons.bar_chart, 'Reports', 2),
+            _drawerItem(Icons.receipt, 'Sale', 3),
+            _drawerItem(Icons.shopping_cart, 'Purchase', 4),
+            _drawerItem(Icons.account_balance_wallet, 'Cash & Bank', 5),
+          ],
+        ),
       ),
+      body: _selectedIndex == 0
+         ? PartiesScreen(
+              parties: parties,
+              onAddParty: _addParty,
+            )
+          : Center(child: Text('${_titles[_selectedIndex]} Screen - جلد آ رہی ہے')),
+    );
+  }
+
+  ListTile _drawerItem(IconData icon, String title, int index) {
+    return ListTile(
+      leading: Icon(icon, color: _selectedIndex == index? Color(0xFF00C853) : Colors.grey),
+      title: Text(title, style: TextStyle(
+        color: _selectedIndex == index? Color(0xFF00C853) : Colors.black87,
+        fontWeight: _selectedIndex == index? FontWeight.bold : FontWeight.normal,
+      )),
+      onTap: () {
+        setState(() => _selectedIndex = index);
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  void _addParty() {
+    TextEditingController nameController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Add New Party'),
+          content: TextField(
+            controller: nameController,
+            decoration: const InputDecoration(hintText: 'Party Name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF00C853)),
+              onPressed: () {
+                if (nameController.text.isNotEmpty) {
+                  setState(() {
+                    parties.add({'name': nameController.text, 'balance': 'Rs 0'});
+                  });
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('Save', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class PartiesScreen extends StatelessWidget {
+  final List<Map<String, String>> parties;
+  final VoidCallback onAddParty;
+
+  const PartiesScreen({super.key, required this.parties, required this.onAddParty});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: 'Search parties...',
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              filled: true,
+              fillColor: Colors.grey[100],
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: parties.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                leading: CircleAvatar(child: Text(parties[index]['name']![0])),
+                title: Text(parties[index]['name']!, style: const TextStyle(fontWeight: FontWeight.bold)),
+                trailing: Text(parties[index]['balance']!, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+              );
+            },
+          ),
+        ),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD32F2F),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: const Text('ADD NEW PARTY', style: TextStyle(color: Colors.white, fontSize: 16)),
+            onPressed: onAddParty,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -62,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
 class ProductsTab extends StatelessWidget {
   const ProductsTab({super.key});
 
@@ -115,7 +116,7 @@ class TipsTab extends StatelessWidget {
           subtitle: Text('قدرتی شیمپو یا بیسن استعمال کریں'),
         ),
         ListTile(
-          leading: Icon(Icons.check_circle, color: Colors.green),
+          leading: Icon(Icons.check_circle, color: Icon(Icons.check_circle, color: Colors.green),
           title: Text('رات کو نیند پوری کریں'),
           subtitle: Text('7-8 گھنٹے کی نیند بالوں کے لیے ضروری'),
         ),
@@ -169,6 +170,32 @@ class ContactTab extends StatelessWidget {
               minimumSize: const Size(double.infinity, 50),
             ),
             child: const Text('Order on WhatsApp'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class HomeTab extends StatelessWidget {
+  const HomeTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.spa, size: 80, color: Colors.green.shade700),
+          const SizedBox(height: 20),
+          const Text(
+            'Welcome to Organic Bloom',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'قدرتی خوبصورتی، قدرتی طریقے',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
         ],
       ),

@@ -22,7 +22,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-  # Assets - اگر images فولڈر ہے تو ان کمنٹ کر دیں
-  # assets:
-  #   - assets/images/
